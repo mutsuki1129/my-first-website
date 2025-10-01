@@ -1,4 +1,4 @@
-const HEADERS = ['怪物名稱', '等級', '生命值', '基礎經驗值', '掉落物品'];
+const HEADERS = ['怪物名稱', '等級', '生命值', '基礎經驗', '掉落物品'];
 let MONSTER_DROPS = []; 
 
 // *** 修正: 元素參考必須與 HTML 中的 ID 一致 ***
@@ -96,7 +96,7 @@ function renderTable(data) {
         row.insertCell().textContent = item['怪物名稱'];
         row.insertCell().textContent = item['等級'];
         row.insertCell().textContent = item['生命值'];
-        row.insertCell().textContent = item['基礎經驗值'];
+        row.insertCell().textContent = item['基礎經驗'];
         row.insertCell().textContent = item['掉落物品'];
     });
 }
@@ -171,3 +171,4 @@ function applyFilters() {
 
 // --- 初始化 ---
 document.addEventListener('DOMContentLoaded', loadData);
+
