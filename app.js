@@ -3,9 +3,9 @@ const HEADERS = ['怪物名稱', '等級', '生命值', '基礎經驗', '掉落�
 let MONSTER_DROPS_RAW = []; 
 let MONSTER_DROPS_MERGED = []; 
 
-// *** 修正: 元素參考回單一搜尋框 ***
+// *** 修正: 元素參考回單一搜尋框，與 index.html 匹配 ***
 const tableBody = document.getElementById('tableBody');
-const searchInput = document.getElementById('searchInput'); // <--- 重新定義為單一搜尋框
+const searchInput = document.getElementById('searchInput'); 
 const dataStatus = document.getElementById('dataStatus');
 const levelFilterControls = document.getElementById('levelFilterControls');
 
@@ -22,11 +22,10 @@ const LEVEL_RANGES = [
     { label: 'Lv. 81+', min: 81, max: 999 },
 ];
 
-// --- loadData, mergeMonsterDrops, renderTable 保持不變 ---
-
+// --- 核心 CSV 解析函式 (保持不變) ---
 async function loadData() {
     const CSV_FILE = 'data.csv';
-    // ... [CSV 檔案載入和解析邏輯，將結果存入 MONSTER_DROPS_RAW] ...
+
     try {
         dataStatus.textContent = "數據載入中...";
         const response = await fetch(CSV_FILE);
@@ -68,7 +67,6 @@ async function loadData() {
             }
         }
         
-        // 數據合併步驟
         MONSTER_DROPS_MERGED = mergeMonsterDrops(MONSTER_DROPS_RAW);
         
         dataStatus.textContent = `數據載入成功，共 ${MONSTER_DROPS_MERGED.length} 筆怪物記錄。`;
@@ -82,9 +80,10 @@ async function loadData() {
     }
 }
 
+// --- 數據合併函式 (保持不變) ---
 function mergeMonsterDrops(rawDrops) {
     const mergedData = new Map();
-    // ... [數據合併邏輯] ...
+
     rawDrops.forEach(item => {
         const monsterName = item['怪物名稱'];
         
@@ -107,9 +106,10 @@ function mergeMonsterDrops(rawDrops) {
     return Array.from(mergedData.values());
 }
 
+// --- 表格渲染函式 (保持不變) ---
 function renderTable(data) {
     tableBody.innerHTML = ''; 
-    // ... [表格渲染邏輯] ...
+    
     if (data.length === 0) {
         const row = tableBody.insertRow();
         const cell = row.insertCell();
@@ -131,31 +131,37 @@ function renderTable(data) {
     });
 }
 
-// --- 修正: 初始化控制項 (綁定單一搜尋框) ---
+// --- 修正: 初始化控制項 (解決 TypeError 錯誤) ---
 function initializeControls() {
-    // *** 修正: 僅綁定單一搜尋框 ***
-    searchInput.addEventListener('input', applyFilters);
+    // *** 這裡正是錯誤發生的原因，必須確保 searchInput 不是 null ***
+    if (searchInput) {
+        searchInput.addEventListener('input', applyFilters);
+    } else {
+        console.error("Error: searchInput element not found. Check index.html ID.");
+    }
 
-    levelFilterControls.innerHTML = LEVEL_RANGES.map((range) => `
-        <label>
-            <input type="checkbox" data-min="${range.min}" data-max="${range.max}" checked>
-            ${range.label}
-        </label>
-    `).join('');
+    if (levelFilterControls) {
+        levelFilterControls.innerHTML = LEVEL_RANGES.map((range) => `
+            <label>
+                <input type="checkbox" data-min="${range.min}" data-max="${range.max}" checked>
+                ${range.label}
+            </label>
+        `).join('');
 
-    levelFilterControls.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-        checkbox.addEventListener('change', applyFilters);
-    });
-
+        levelFilterControls.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', applyFilters);
+        });
+    } else {
+        console.error("Error: levelFilterControls element not found. Check index.html ID.");
+    }
+    
     applyFilters(); 
 }
 
-// --- 修正: 合併所有篩選邏輯 (單一搜尋 + 等級) ---
+// --- 單一搜尋邏輯 (保持不變) ---
 function applyFilters() {
-    // 1. 取得單一輸入框的值
     const query = searchInput.value.toLowerCase().trim();
     
-    // 2. 取得所有選中的等級區間
     const selectedRanges = Array.from(levelFilterControls.querySelectorAll('input:checked')).map(cb => ({
         min: parseInt(cb.dataset.min),
         max: parseInt(cb.dataset.max)
@@ -163,7 +169,7 @@ function applyFilters() {
     
     let filtered = MONSTER_DROPS_MERGED; 
     
-    // 3. 步驟一：等級區間過濾
+    // 步驟一：等級區間過濾
     if (selectedRanges.length > 0) {
         filtered = filtered.filter(item => {
             const level = parseInt(item['等級']);
@@ -175,10 +181,9 @@ function applyFilters() {
         });
     }
 
-    // 4. 步驟二：單一文字搜尋過濾
+    // 步驟二：單一文字搜尋過濾 (怪物名稱 OR 掉落物品)
     if (query.length > 0) {
         filtered = filtered.filter(item => {
-            // 檢查怪物名稱 OR 掉落物品列表
             const monsterMatch = item['怪物名稱'].toLowerCase().includes(query);
             
             const dropMatch = item['掉落物品'].some(dropItem => 
