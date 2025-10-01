@@ -1,3 +1,4 @@
+/* 基本重設與佈局 */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f4f7f9;
@@ -14,7 +15,7 @@ body {
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 1200px;
+    max-width: 1400px; 
 }
 
 h1 {
@@ -34,7 +35,7 @@ h1 {
 #searchInput {
     padding: 10px 15px;
     width: 100%;
-    max-width: 600px; /* 增加寬度以適應單一輸入框 */
+    max-width: 600px; 
     border: 2px solid #ccc;
     border-radius: 4px;
     font-size: 16px;
@@ -63,6 +64,8 @@ h1 {
     border-radius: 4px;
     background-color: #fcfcfc;
     justify-content: center;
+    width: 100%;
+    max-width: 900px;
 }
 
 .level-filter-controls label {
@@ -78,40 +81,111 @@ h1 {
     transform: scale(1.1);
 }
 
-/* 表格樣式 */
-.table-container {
-    max-height: 70vh; 
-    overflow-y: auto;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
+
+/* --- 核心樣式：怪物卡片佈局 --- */
+
+/* 1. 實現卡片橫向排列 (使用 CSS Grid) */
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px; 
+    padding: 10px;
+    margin-top: 20px;
 }
 
-#dropTable {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #fff;
+/* 2. 怪物卡片樣式 */
+.monster-card {
+    background: #ffffff;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
+    overflow: hidden; 
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-#dropTable thead th {
+.monster-card:hover {
+    transform: translateY(-3px); 
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* 3. 怪物基本資料 (橫向排列在卡片頂部) */
+.monster-info-header {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
     background-color: #007bff;
     color: white;
-    padding: 12px 15px;
+    padding: 10px 12px;
+    font-weight: bold;
+}
+
+/* 3A. 名稱容器 (實現中英分行) */
+.monster-info-header .name-container {
+    flex-grow: 1; 
     text-align: left;
-    position: sticky; 
-    top: 0;
-    z-index: 10;
+    min-width: 100px; 
+    margin-right: 8px;
+    display: flex;
+    flex-direction: column; /* 垂直堆疊 */
 }
 
-#dropTable tbody tr:nth-child(even) {
-    background-color: #f8f9fa;
+/* 英文名稱 (固定在第一行) */
+.monster-info-header .name-en {
+    font-size: 1.1em;
+    font-weight: bold;
+    white-space: nowrap; /* 不允許換行 */
+    overflow: hidden; /* 超出部分隱藏 */
+    text-overflow: ellipsis; /* 超出部分顯示省略號 */
+    line-height: 1.2;
 }
 
-#dropTable tbody tr:hover {
-    background-color: #e2f0ff;
+/* 中文名稱 (固定在第二行) */
+.monster-info-header .name-cn {
+    font-size: 0.85em;
+    opacity: 0.8;
+    line-height: 1.2;
 }
 
-#dropTable td {
-    padding: 10px 15px;
-    border-bottom: 1px solid #dee2e6;
-    font-size: 14px;
+/* 3B. 數值屬性 */
+.monster-info-header .level,
+.monster-info-header .hp,
+.monster-info-header .exp {
+    font-size: 0.85em;
+    margin-left: 10px;
+    white-space: nowrap; 
+    padding-left: 5px;
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.monster-info-header .level {
+    border-left: none;
+}
+
+
+/* 4. 掉落物品列表的樣式 (堆疊在 header 正下方) */
+.drop-list {
+    padding: 10px;
+    line-height: 1.5;
+    background-color: #f9f9f9;
+    min-height: 100px; 
+}
+
+.drop-list span {
+    display: block; /* 每個掉落物佔據一行 */
+    font-size: 0.9em;
+    color: #444;
+    padding: 2px 0;
+    border-bottom: 1px dotted #e0e0e0;
+}
+
+.drop-list span:last-child {
+    border-bottom: none;
+}
+
+.no-results {
+    grid-column: 1 / -1; 
+    text-align: center;
+    padding: 30px;
+    font-size: 1.2em;
+    color: #6c757d;
 }

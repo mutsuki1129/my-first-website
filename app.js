@@ -3,8 +3,8 @@ const HEADERS = ['怪物名稱', '等級', '生命值', '基礎經驗', '掉落�
 let MONSTER_DROPS_RAW = []; 
 let MONSTER_DROPS_MERGED = []; 
 
-// *** 修正: 元素參考回單一搜尋框，與 index.html 匹配 ***
-const tableBody = document.getElementById('tableBody');
+// 元素參考
+const resultsGrid = document.getElementById('resultsGrid'); 
 const searchInput = document.getElementById('searchInput'); 
 const dataStatus = document.getElementById('dataStatus');
 const levelFilterControls = document.getElementById('levelFilterControls');
@@ -22,7 +22,7 @@ const LEVEL_RANGES = [
     { label: 'Lv. 81+', min: 81, max: 999 },
 ];
 
-// --- 核心 CSV 解析函式 (保持不變) ---
+// --- 核心 CSV 解析函式 ---
 async function loadData() {
     const CSV_FILE = 'data.csv';
 
@@ -80,7 +80,7 @@ async function loadData() {
     }
 }
 
-// --- 數據合併函式 (保持不變) ---
+// --- 數據合併函式 (資料精簡) ---
 function mergeMonsterDrops(rawDrops) {
     const mergedData = new Map();
 
@@ -106,39 +106,64 @@ function mergeMonsterDrops(rawDrops) {
     return Array.from(mergedData.values());
 }
 
-// --- 表格渲染函式 (保持不變) ---
+// --- 表格渲染函式 (生成卡片結構與中英分行) ---
 function renderTable(data) {
-    tableBody.innerHTML = ''; 
+    resultsGrid.innerHTML = ''; // 清空結果容器
     
     if (data.length === 0) {
-        const row = tableBody.insertRow();
-        const cell = row.insertCell();
-        cell.colSpan = HEADERS.length;
-        cell.textContent = "查無資料。";
-        cell.style.textAlign = 'center';
+        resultsGrid.innerHTML = '<div class="no-results">查無資料。</div>';
         return;
     }
 
     data.forEach(item => {
-        const row = tableBody.insertRow();
-        row.insertCell().textContent = item['怪物名稱'];
-        row.insertCell().textContent = item['等級'];
-        row.insertCell().textContent = item['生命值'];
-        row.insertCell().textContent = item['基礎經驗']; 
+        const dropListHTML = item['掉落物品'].map(drop => `<span>${drop}</span>`).join('');
         
-        const dropCell = row.insertCell();
-        dropCell.innerHTML = item['掉落物品'].join('<br>'); 
+        // ** 處理中英文名稱拆分 **
+        const fullName = item['怪物名稱'].trim();
+        let englishName = fullName;
+        let chineseName = '';
+
+        const match = fullName.match(/(.*)\s*\((.*)\)/); // 匹配格式: Name (中文)
+        if (match) {
+            englishName = match[1].trim();
+            chineseName = match[2].trim();
+        } else {
+            // 如果沒有匹配到標準格式，假設怪物名稱全部是英文或中文
+            englishName = fullName;
+            chineseName = ''; 
+        }
+
+        const nameHTML = `
+            <span class="name-en">${englishName}</span>
+            <span class="name-cn">${chineseName}</span>
+        `;
+        // **********************************
+        
+        const cardHTML = `
+            <div class="monster-card">
+                <div class="monster-info-header">
+                    <div class="name-container">
+                        ${nameHTML} 
+                    </div>
+                    <span class="level">Lv. ${item['等級']}</span>
+                    <span class="hp">HP: ${item['生命值']}</span>
+                    <span class="exp">EXP: ${item['基礎經驗']}</span>
+                </div>
+                <div class="drop-list">
+                    ${dropListHTML}
+                </div>
+            </div>
+        `;
+        resultsGrid.insertAdjacentHTML('beforeend', cardHTML);
     });
 }
 
-// --- 修正: 初始化控制項 (解決 TypeError 錯誤) ---
+
+// --- 初始化控制項 ---
 function initializeControls() {
-    // *** 這裡正是錯誤發生的原因，必須確保 searchInput 不是 null ***
     if (searchInput) {
         searchInput.addEventListener('input', applyFilters);
-    } else {
-        console.error("Error: searchInput element not found. Check index.html ID.");
-    }
+    } 
 
     if (levelFilterControls) {
         levelFilterControls.innerHTML = LEVEL_RANGES.map((range) => `
@@ -151,14 +176,12 @@ function initializeControls() {
         levelFilterControls.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
             checkbox.addEventListener('change', applyFilters);
         });
-    } else {
-        console.error("Error: levelFilterControls element not found. Check index.html ID.");
     }
     
     applyFilters(); 
 }
 
-// --- 單一搜尋邏輯 (保持不變) ---
+// --- 單一搜尋邏輯 ---
 function applyFilters() {
     const query = searchInput.value.toLowerCase().trim();
     
@@ -184,8 +207,10 @@ function applyFilters() {
     // 步驟二：單一文字搜尋過濾 (怪物名稱 OR 掉落物品)
     if (query.length > 0) {
         filtered = filtered.filter(item => {
+            // 檢查怪物名稱
             const monsterMatch = item['怪物名稱'].toLowerCase().includes(query);
             
+            // 檢查掉落物品列表
             const dropMatch = item['掉落物品'].some(dropItem => 
                 dropItem.toLowerCase().includes(query)
             );
