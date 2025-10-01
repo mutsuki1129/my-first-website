@@ -1,61 +1,117 @@
 body {
-    font-family: Arial, sans-serif;
-    line-height: 1.6;
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #f4f4f4;
-}
-
-h1, h2 {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f7f9;
     color: #333;
-}
-
-section {
-    background: #fff;
+    margin: 0;
     padding: 20px;
-    margin-bottom: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
 }
 
-input[type="text"] {
-    width: 90%;
-    padding: 10px;
+.container {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 1200px;
+}
+
+h1 {
+    text-align: center;
+    color: #007bff;
     margin-bottom: 20px;
-    border: 1px solid #ccc;
+}
+
+/* 篩選控制項區塊 */
+.search-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#searchInput {
+    padding: 10px 15px;
+    width: 100%;
+    max-width: 600px; /* 增加寬度以適應單一輸入框 */
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+#searchInput:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+.status-message {
+    margin-top: 10px;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+/* 等級區間篩選控制項 */
+.level-filter-controls {
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 15px;
+    margin-top: 15px;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background-color: #fcfcfc;
+    justify-content: center;
+}
+
+.level-filter-controls label {
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    user-select: none; 
+}
+
+.level-filter-controls input[type="checkbox"] {
+    margin-right: 5px;
+    transform: scale(1.1);
+}
+
+/* 表格樣式 */
+.table-container {
+    max-height: 70vh; 
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
     border-radius: 4px;
 }
 
-.results-container {
-    margin-top: 15px;
-}
-
-table {
+#dropTable {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    background-color: #fff;
 }
 
-th, td {
-    padding: 10px;
-    border: 1px solid #ddd;
+#dropTable thead th {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 15px;
     text-align: left;
+    position: sticky; 
+    top: 0;
+    z-index: 10;
 }
 
-th {
-    background-color: #e0e0e0;
+#dropTable tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
 }
 
-/* 針對掉落物列表的樣式 */
-#monster-results ul {
-    list-style-type: none;
-    padding: 0;
+#dropTable tbody tr:hover {
+    background-color: #e2f0ff;
 }
 
-#monster-results ul li {
-    background-color: #f9f9f9;
-    margin-bottom: 5px;
-    padding: 5px;
-    border-left: 3px solid #007bff;
+#dropTable td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #dee2e6;
+    font-size: 14px;
 }
