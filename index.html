@@ -3,26 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChronoStory 怪物掉落</title>
+    <title>ChronoStory 怪物掉落查詢</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>ChronoStory 怪物掉落查詢</h1>
+    <div class="container">
+        <h1>ChronoStory 怪物掉落查詢</h1>
+        
+        <div class="search-controls">
+            <input type="text" id="searchInput" placeholder="輸入怪物名稱或掉落物品..." autocomplete="off">
+            
+            <div id="levelFilterControls" class="level-filter-controls">
+                </div>
+            
+            <div id="dataStatus" class="status-message">數據載入中...</div>
+        </div>
 
-    <section id="monster-search">
-        <h2>1. 依怪物名稱查詢</h2>
-        <input type="text" id="monster-input" placeholder="輸入怪物名稱">
-        <div id="monster-results" class="results-container">
-            </div>
-    </section>
-
-    <section id="drop-search">
-        <h2>2. 依掉落物品查詢</h2>
-        <input type="text" id="drop-input" placeholder="輸入掉落物品">
-        <div id="drop-results" class="results-container">
-            </div>
-    </section>
-
+        <div class="table-container">
+            <table id="dropTable">
+                <thead>
+                    <tr>
+                        <th>怪物名稱</th>
+                        <th>等級 (Lv.)</th>
+                        <th>生命值 (HP)</th>
+                        <th>基礎經驗 (Base EXP)</th>
+                        <th>掉落物品</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    </tbody>
+            </table>
+        </div>
+        
+    </div>
     <script src="app.js"></script>
 </body>
 </html>
