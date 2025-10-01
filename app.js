@@ -1,10 +1,13 @@
-// 確保這五個欄位名稱與您的 data.csv 標題行完全一致
 const HEADERS = ['怪物名稱', '等級', '生命值', '基礎經驗值', '掉落物品'];
 let MONSTER_DROPS = []; 
+
+// *** 修正: 元素參考必須與 HTML 中的 ID 一致 ***
 const tableBody = document.getElementById('tableBody');
-const searchInput = document.getElementById('searchInput');
+const monsterInput = document.getElementById('monsterInput'); // 修正 ID
+const dropInput = document.getElementById('dropInput');       // 修正 ID
 const dataStatus = document.getElementById('dataStatus');
 const levelFilterControls = document.getElementById('levelFilterControls');
+// ************************************************
 
 // 定義等級區間
 const LEVEL_RANGES = [
@@ -19,7 +22,7 @@ const LEVEL_RANGES = [
     { label: 'Lv. 81+', min: 81, max: 999 },
 ];
 
-// --- 核心 CSV 解析函式 ---
+// --- 核心 CSV 解析函式 (保持不變) ---
 async function loadData() {
     const CSV_FILE = 'data.csv';
 
@@ -28,16 +31,16 @@ async function loadData() {
         const response = await fetch(CSV_FILE);
         
         if (!response.ok) {
-            dataStatus.textContent = `錯誤: 無法載入數據 (${response.status} ${response.statusText})。請檢查檔案路徑。`;
+            dataStatus.textContent = `錯誤: 無法載入數據 (${response.status} ${response.statusText})。`;
             return;
         }
-
+        // ... (CSV 解析邏輯保持不變) ...
         const csvText = await response.text();
         const normalizedText = csvText.trim().replace(/^\uFEFF/, '');
         const lines = normalizedText.split(/\r?\n/);
         
         if (lines.length <= 1) {
-            dataStatus.textContent = "數據載入成功，共 0 筆記錄 (檔案可能為空)。";
+            dataStatus.textContent = "數據載入成功，共 0 筆記錄。";
             return;
         }
 
@@ -61,14 +64,11 @@ async function loadData() {
                     row[header] = values[index];
                 });
                 MONSTER_DROPS.push(row);
-            } else {
-                console.warn(`Skipping line ${i + 1}: Expected ${HEADERS.length} columns, found ${values.length}. Line:`, line);
             }
         }
         
         dataStatus.textContent = `數據載入成功，共 ${MONSTER_DROPS.length} 筆記錄。`;
         
-        // 初始渲染表格和控制項
         renderTable(MONSTER_DROPS);
         initializeControls(); 
         
@@ -101,10 +101,11 @@ function renderTable(data) {
     });
 }
 
-// --- 新增：初始化控制項 (生成勾選框) ---
+// --- 初始化控制項 ---
 function initializeControls() {
-    // 綁定搜尋事件
-    searchInput.addEventListener('input', applyFilters);
+    // *** 修正: 綁定事件到兩個獨立的輸入框 ***
+    monsterInput.addEventListener('input', applyFilters);
+    dropInput.addEventListener('input', applyFilters);
 
     // 生成等級區間篩選器 HTML
     levelFilterControls.innerHTML = LEVEL_RANGES.map((range) => `
@@ -114,20 +115,21 @@ function initializeControls() {
         </label>
     `).join('');
 
-    // 綁定勾選事件，任何勾選框狀態改變都觸發過濾
+    // 綁定勾選事件
     levelFilterControls.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
         checkbox.addEventListener('change', applyFilters);
     });
 
-    // 初始載入時，套用所有預設的篩選器
     applyFilters(); 
 }
 
-// --- 修正：合併所有篩選邏輯 ---
+// --- 修正: 合併所有篩選邏輯 (處理兩個輸入框) ---
 function applyFilters() {
-    const query = searchInput.value.toLowerCase().trim();
+    // 1. 取得兩個輸入框的值
+    const monsterQuery = monsterInput.value.toLowerCase().trim();
+    const dropQuery = dropInput.value.toLowerCase().trim();
     
-    // 1. 取得所有選中的等級區間
+    // 2. 取得所有選中的等級區間
     const selectedRanges = Array.from(levelFilterControls.querySelectorAll('input:checked')).map(cb => ({
         min: parseInt(cb.dataset.min),
         max: parseInt(cb.dataset.max)
@@ -135,11 +137,11 @@ function applyFilters() {
     
     let filtered = MONSTER_DROPS;
     
-    // 2. 等級區間過濾 (如果沒有任何區間被選中，則不執行等級過濾，顯示所有數據)
+    // 3. 等級區間過濾
     if (selectedRanges.length > 0) {
         filtered = filtered.filter(item => {
             const level = parseInt(item['等級']);
-            if (isNaN(level)) return false; // 過濾掉等級無效的資料
+            if (isNaN(level)) return false; 
             
             return selectedRanges.some(range => {
                 return level >= range.min && level <= range.max;
@@ -147,13 +149,19 @@ function applyFilters() {
         });
     }
 
-
-    // 3. 文字搜尋過濾
-    if (query.length > 0) {
+    // 4. 文字搜尋過濾 (結合兩個查詢)
+    
+    // A. 怪物名稱篩選 (只在輸入框有內容時執行)
+    if (monsterQuery.length > 0) {
         filtered = filtered.filter(item => {
-            const monsterMatch = item['怪物名稱'].toLowerCase().includes(query);
-            const dropMatch = item['掉落物品'].toLowerCase().includes(query);
-            return monsterMatch || dropMatch;
+            return item['怪物名稱'].toLowerCase().includes(monsterQuery);
+        });
+    }
+
+    // B. 掉落物品篩選 (只在輸入框有內容時執行)
+    if (dropQuery.length > 0) {
+        filtered = filtered.filter(item => {
+            return item['掉落物品'].toLowerCase().includes(dropQuery);
         });
     }
 
